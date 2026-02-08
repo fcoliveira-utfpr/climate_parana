@@ -1,3 +1,4 @@
+/**** Define ZCs predominantes em cada município ****/
 /**** CONFIGURAÇÕES GERAIS ****/
 var SCALE = 1000;        // ~1 km
 var MAX_PIXELS = 1e13;   
