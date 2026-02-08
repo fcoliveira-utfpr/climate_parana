@@ -1,4 +1,8 @@
 // =====================================================
+// 0. Gera vetor de altitudes
+// =====================================================
+
+// =====================================================
 // 1. Limite do Paraná (GAUL)
 // =====================================================
 var municipios = ee.FeatureCollection('FAO/GAUL/2015/level2')
@@ -16,26 +20,33 @@ Map.addLayer(parana, {color: 'red'}, 'Paraná');
 // =====================================================
 var srtm = ee.Image('USGS/SRTMGL1_003');
 
-// Recortar para Paraná
+// Recortar Paraná
 var srtm_pr = srtm.clip(parana);
 
-// Visualizar relevo
-Map.addLayer(
-  srtm_pr,
-  {min: 0, max: 1200, palette: ['blue', 'green', 'yellow', 'brown']},
-  'SRTM Paraná'
-);
+// =====================================================
+// 3. Converter raster para pontos (30 m)
+// =====================================================
 
-// =====================================================
-// 3. Exportar GeoTIFF
-// =====================================================
-Export.image.toDrive({
-  image: srtm_pr,
-  description: 'SRTM_Parana_30m',
-  folder: 'GEE3',
-  fileNamePrefix: 'SRTM_Parana_30m',
+var pontos = srtm_pr.sample({
   region: parana,
   scale: 30,
-  crs: 'EPSG:4326',   
-  maxPixels: 1e13
+  numPixels: 1000000,   
+  seed: 1,
+  geometries: true
 });
+
+// Visualizar amostra
+print('Primeiros pontos:', pontos.limit(5));
+Map.addLayer(pontos.limit(5000), {}, 'Pontos SRTM');
+
+// =====================================================
+// 4. Exportar CSV
+// =====================================================
+Export.table.toDrive({
+  collection: pontos,
+  description: 'SRTM_Parana_30m_Pontos',
+  folder: 'GEE3',
+  fileNamePrefix: 'SRTM_Parana_30m',
+  fileFormat: 'CSV'
+});
+
